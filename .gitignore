@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+
+# Node
+node_modules/
+*.log
+
+# Claude Code — local / generated
+.claude/settings.local.json
+.claude/tsc-cache/
+.claude/worktrees/
+.claude/scheduled_tasks.lock
+
+# dev-docs lifecycle — task working dirs (도메인 종속이라 publish 대상 아님)
+dev/active/
+dev/done/
+
+# history 파일은 디스크에만 두고 커밋하지 않음
+# 예외: 진화 기록 reference doc + 템플릿
+dev/history/*.md
+!dev/history/harness_history_generalized.md
+!dev/history/TEMPLATE.md
