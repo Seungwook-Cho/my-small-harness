@@ -2,7 +2,7 @@
 
 `.claude/` 디렉토리(hooks, agents, skills, rules) 의 진화 기록. 도메인 색깔(특정 모듈명, 회사 시스템)을 걷어내고 **"왜 이런 구조가 나왔는지"** 만 남긴 버전.
 
-> 본 harness 는 다스택 모노레포(iOS / Next.js / Go) 환경에서 출발했고, 공개 버전에선 Next.js/React/TS 부분만 추출. 진화 narrative 는 다스택 시점의 결정들이 그대로 살아있다 — 의사결정의 폭을 보여주는 게 중요.
+> 본 harness 는 다스택 모노레포(iOS / Next.js / Go) 환경에서 출발했고, 공개 버전에선 Next.js/React/TS 부분만 추출.
 
 ---
 
