@@ -1,10 +1,10 @@
 # my-small-harness
 
-**Solo developer 용 Next.js 16 / React 19 / TypeScript 5 / pnpm 모노레포 Claude Code harness.**
+**Next.js 16 / React 19 / TypeScript 5 / pnpm 모노레포 Claude Code harness.**
 Coordinator(Opus) + implementer/verifier(Sonnet) 분업 · `/dev-docs` 라이프사이클(BIG/SMALL/MICRO) · scope 자동 추출 · 커밋·history 강제 hook · TypeScript 에러 자동 수정 에이전트.
 
 > **AI 를 코딩 보조 도구로 쓰기 위한 실험.**
-> AI 가 처음부터 끝까지 만들어주는 "vibe coding" 이 아니라, **본인이 어디를 어떻게 고칠지 이미 아는 상태**에서 실행 가속·기계적 fix·결정 기록 자동화에 AI 를 붙이는 방향. 모든 분업·분기·hook 이 이 전제 위에서 설계됨 — 사용자의 판단을 대체하지 않고 보조한다.
+> AI 가 처음부터 끝까지 만들어주는 "vibe coding" 이 아니라, **본인이 어디를 어떻게 고칠지 이미 아는 상태**에서 실행 가속·기계적 fix·결정 기록 자동화에 AI 를 붙이는 방향. 모든 분업·분기·hook 이 이 전제 위에서 설계됨.
 
 ---
 
@@ -12,31 +12,31 @@ Coordinator(Opus) + implementer/verifier(Sonnet) 분업 · `/dev-docs` 라이프
 
 ### 1. Fresh context 와 `/clear` 의 trade-off
 
-세션이 길어지면 Claude 답변 품질이 눈에 띄게 떨어진다. `/clear` 로 fresh context 를 만들면 회복되지만, 이전에 합의한 plan / 결정 / 진행 상태를 다 잊는다. 매번 처음부터 설명하는 게 가장 큰 비용.
+세션이 길어지면 Claude 답변 품질이 눈에 띄게 떨어졌다. `/clear` 로 fresh context 를 만들면 회복됐지만, 이전에 합의한 plan / 결정 / 진행 상태를 다 잊었다. 매번 처음부터 설명하는 게 가장 큰 비용이었다.
 
 → `dev/active/<task>/` 안에 plan / context / tasks 3종을 두고 fresh 시작 시 자동 로드. **잊어도 되는 건 잊고, 보존할 가치 있는 것만 명시적으로 재주입.**
 
 ### 2. 모델 분업 — Sonnet 코딩, Opus planning
 
-직접 비교: 코딩 품질은 **Sonnet 으로 충분**. Opus 의 진짜 강점은 **planning / 판단 / dispatch / 결과 해석**. 모든 걸 Opus 에 맡기면 비싸기만 하고 코딩 품질 차이는 미미.
+직접 비교해본 결과, 코딩 품질은 **Sonnet 으로 충분했다**. Opus 의 진짜 강점은 **planning / 판단 / dispatch / 결과 해석**이었고, 모든 걸 Opus 에 맡기면 비싸기만 했고 코딩 품질 차이는 미미했다.
 
 → Coordinator(Opus) 는 디스패치·plan 만, 코딩(implementer)·검증(verifier)은 Sonnet, TS 에러 정리는 Haiku. **비용 절반, 품질 동등.**
 
 ### 3. commit 은 필수, PR 은 오버헤드
 
-Claude 가 revert 할 때 / 무엇이 바뀌었는지 확인할 때 / 다른 작업에서 변경 이력 참조할 때 — 모두 commit 단위로 동작. 그런데 솔로 작업에 매번 PR 올리고 머지하는 건 형식적 오버헤드만 되고 정보 가치는 없음.
+Claude 가 revert 할 때 / 무엇이 바뀌었는지 확인할 때 / 다른 작업에서 변경 이력 참조할 때 — 모두 commit 단위로 동작했다. 그런데 솔로 작업에 매번 PR 올리고 머지하는 건 형식적 오버헤드만 됐고 정보 가치는 없었다.
 
 → commit 은 hook 으로 강제, PR 워크플로는 out of scope. **`history.md` 가 PR description 역할 (WHY · 검토한 대안 · 실패한 시도) 을 대체.**
 
 ### 4. 워크플로의 무게에 대한 고민
 
-유명 harness들(GSD, Superpowers 류) 을 검토하면서 든 느낌은, **어디를 어떻게 고칠지 이미 아는 단순한 fix 에도 인터뷰 → planning → 다단계 서브에이전트가 도는 경향이 있어 헤비하게 느껴졌다**. 작업마다 규모가 다른데 한 가지 흐름만 있으면 짧은 작업에선 오버헤드.
+유명 harness들(GSD, Superpowers 류) 을 검토하면서 들었던 느낌은, **어디를 어떻게 고칠지 이미 아는 단순한 fix 에도 인터뷰 → planning → 다단계 서브에이전트가 도는 경향이 있어 헤비하게 느껴졌다**. 작업마다 규모가 다른데 한 가지 흐름만 있으면 짧은 작업에선 오버헤드였다.
 
 → `/dev-docs` 가 BIG/SMALL/MICRO 분기 → **가볍게 쓸 일은 가볍게**. MICRO(1-2줄) 는 Coordinator 직접, SMALL 은 implementer 1회, BIG 만 풀 파이프라인.
 
 ### 5. "완료" 보고하고 commit / history 망각
 
-Claude 가 작업 완료 보고를 한 뒤 commit 을 빠뜨리거나, commit 만 하고 `history.md` 기록을 누락한 채 세션을 끝내는 경우가 잦았다. 다음 세션에서 보면 "이 변경 왜 했지?" 가 사라져 있음 — `git log` 는 WHAT 만 남기고 WHY 는 망각된 상태.
+Claude 가 작업 완료 보고를 한 뒤 commit 을 빠뜨리거나, commit 만 하고 `history.md` 기록을 누락한 채 세션을 끝내는 경우가 잦았다. 다음 세션에서 보면 "이 변경 왜 했지?" 가 사라져 있었다 — `git log` 는 WHAT 만 남기고 WHY 는 망각된 상태였다.
 
 → Stop hook (`stop-commit-history-check.sh`) 으로 **세션 종료 자체를 게이트로 활용**. 모듈 코드 수정 후 커밋 누락이면 차단, 커밋했으나 history 누락이면 차단. Stop hook 이 공식적으로 1회만 차단 가능한 한계를 세션별 state 파일로 우회 → 두 단계 순차 강제 가능.
 
