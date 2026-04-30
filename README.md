@@ -73,7 +73,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start(["/dev-docs &lt;작업 설명&gt;"])
-    Interview["STEP 0  · dev/active/ 진행 중?<br/>STEP 1  · 어느 모듈? (web/api)<br/>STEP 1.5 · scope 질문 5종 (확장 · API · lib · fetch · 성능)<br/>STEP 2  · 분기 판정"]
+    Interview["STEP 0 · active 확인<br/>STEP 1 · 모듈 (web/api)<br/>STEP 1.5 · scope 5질문<br/>STEP 2 · 분기 판정"]
     Micro["<b>MICRO</b><br/>1–2줄 · 단일 파일"]
     Small["<b>SMALL</b><br/>2–3파일 · 단일 레이어"]
     Big["<b>BIG</b><br/>다파일 · 다레이어"]
@@ -93,6 +93,8 @@ flowchart TD
     Small --> SmallAct
     Big --> BigPlan --> BigImp --> BigVer --> BigCommit
 ```
+
+> **STEP 1.5 scope 5질문:** 기존 확장 vs 신규 / API 변경 / 외부 lib 추가 / 데이터 페칭 패턴 / 비기능 요구
 
 | 축 | BIG | SMALL | MICRO |
 |----|-----|-------|-------|
