@@ -48,30 +48,20 @@ Claude 가 작업 완료 보고를 한 뒤 commit 을 빠뜨리거나, commit �
 
 메인 세션(Opus)은 **대화·판단·디스패치·plan 작성**만. 실제 코딩·검증·에러 수정은 fresh context 의 별도 에이전트로 분리. Coordinator context 를 빌드 로그/grep 결과로 더럽히지 않기 위함.
 
-```
-                              사용자
-                                │
-                                ▼
-        ┌───────────────────────────────────────────────┐
-        │           Coordinator   (Opus 4.7)            │
-        │     대화 / 판단 / 디스패치 / plan 작성         │
-        └───────┬───────────┬────────────┬──────────────┘
-                │           │            │
-        dispatch│           │            │
-                ▼           ▼            ▼
-        ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-        │ implementer │ │  verifier   │ │ error fixers│
-        │   Sonnet    │ │   Sonnet    │ │             │
-        ├─────────────┤ ├─────────────┤ ├─────────────┤
-        │ 단일 task   │ │ plan vs 코드│ │ auto-error- │
-        │ fresh ctx   │ │ 독립 대조   │ │ resolver    │
-        │ 빌드+커밋   │ │ stub/완성도 │ │   (Haiku)   │
-        │ 자체수정 ≤2 │ │ PASS / FAIL │ │ TS 에러 자동│
-        │             │ │             │ │             │
-        │ DONE /      │ │             │ │ frontend-   │
-        │ NEEDS_CTX / │ │             │ │ error-fixer │
-        │ BLOCKED 보고│ │             │ │   (Sonnet)  │
-        └─────────────┘ └─────────────┘ └─────────────┘
+```mermaid
+flowchart TD
+    User([사용자])
+    Coord["<b>Coordinator</b> (Opus 4.7)<br/>대화 · 판단 · 디스패치 · plan 작성"]
+    Imp["<b>implementer</b> (Sonnet)<br/>단일 task · fresh ctx<br/>빌드 + 커밋 · 자체수정 ≤ 2회<br/>DONE / NEEDS_CTX / BLOCKED 보고"]
+    Ver["<b>verifier</b> (Sonnet)<br/>plan vs 코드 독립 대조<br/>stub / 완성도 점검<br/>PASS / FAIL"]
+    AER["<b>auto-error-resolver</b> (Haiku)<br/>TS 컴파일 에러 자동 수정"]
+    FEF["<b>frontend-error-fixer</b> (Sonnet)<br/>Next.js 빌드 / 런타임 에러"]
+
+    User --> Coord
+    Coord -- dispatch --> Imp
+    Coord -- dispatch --> Ver
+    Coord -- dispatch --> AER
+    Coord -- dispatch --> FEF
 ```
 
 각 서브에이전트는 **fresh context** 로 받음. Coordinator 가 인계 시 `[FILES]` / `[TASK]` / `[VERIFY]` / `[COMMIT]` 블록으로 명시적 인터페이스. 결과는 상태코드로 회신 → Coordinator 가 매트릭스대로 분기.
@@ -80,45 +70,28 @@ Claude 가 작업 완료 보고를 한 뒤 commit 을 빠뜨리거나, commit �
 
 `/dev-docs <작업>` → 스킬이 **5축 시그널**로 분기 판정 → 분기별 다른 처리.
 
-```
-                       /dev-docs <작업 설명>
-                              │
-                              ▼
-             ┌────────────────────────────────┐
-             │ STEP 0:  dev/active/ 진행 중?  │
-             │ STEP 1:  어느 모듈? (web/api)   │
-             │ STEP 1.5: scope 질문 5종       │
-             │   (확장? API? lib? fetch? 성능?)│
-             │ STEP 2:  분기 판정              │
-             └─────────────────┬──────────────┘
-                               │
-              ┌────────────────┼─────────────────┐
-              ▼                ▼                 ▼
-         ┌─────────┐      ┌─────────┐       ┌─────────┐
-         │  MICRO  │      │  SMALL  │       │   BIG   │
-         │  1-2줄  │      │ 2-3파일 │       │ 다파일  │
-         │ 단일파일│      │ 단일레이어│       │ 다레이어│
-         └────┬────┘      └────┬────┘       └────┬────┘
-              │                │                 │
-              ▼                ▼                 ▼
-        Coordinator      implementer        dev/active/<task>/
-        직접 수정         1회 디스패치          ├─ plan.md
-        + pnpm typecheck  + 빌드 + 커밋        ├─ context.md
-        + [scope] 커밋                          └─ tasks.md
-                                                     │
-                                                     ▼
-                                              implementer × N
-                                              (depends 기반 병렬 wave)
-                                                     │
-                                                     ▼
-                                              verifier (fresh)
-                                              ├─ PASS → 다음
-                                              └─ FAIL → 재디스패치
-                                                     │
-                                                     ▼
-                                              [scope] type: 커밋
-                                              + history `## 미정리`
-                                                append
+```mermaid
+flowchart TD
+    Start(["/dev-docs &lt;작업 설명&gt;"])
+    Interview["STEP 0  · dev/active/ 진행 중?<br/>STEP 1  · 어느 모듈? (web/api)<br/>STEP 1.5 · scope 질문 5종 (확장 · API · lib · fetch · 성능)<br/>STEP 2  · 분기 판정"]
+    Micro["<b>MICRO</b><br/>1–2줄 · 단일 파일"]
+    Small["<b>SMALL</b><br/>2–3파일 · 단일 레이어"]
+    Big["<b>BIG</b><br/>다파일 · 다레이어"]
+
+    MicroAct["Coordinator 직접 수정<br/>+ pnpm typecheck<br/>+ [scope] 커밋"]
+    SmallAct["implementer 1회 디스패치<br/>+ 빌드 + 커밋"]
+    BigPlan["dev/active/&lt;task&gt;/<br/>plan.md · context.md · tasks.md"]
+    BigImp["implementer × N<br/>(depends 기반 병렬 wave)"]
+    BigVer["verifier (fresh)<br/>PASS → 다음 / FAIL → 재디스패치"]
+    BigCommit["[scope] type: 커밋<br/>+ history ## 미정리 append"]
+
+    Start --> Interview
+    Interview --> Micro
+    Interview --> Small
+    Interview --> Big
+    Micro --> MicroAct
+    Small --> SmallAct
+    Big --> BigPlan --> BigImp --> BigVer --> BigCommit
 ```
 
 | 축 | BIG | SMALL | MICRO |
