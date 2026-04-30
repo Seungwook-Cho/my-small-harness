@@ -161,7 +161,7 @@ GSD (`gsd-plan-checker`, `gsd-executor`, `gsd-context-monitor`) + Superpowers (`
 > **stop hook 강화 병행:** 최근 5분 commit 에 prefix 없으면 reject + amend 명령 제시. **사전 자동화(헬퍼) + 사후 검증(stop hook) 두 층 방어.**
 
 > **`/dev-docs` 스킬 ship — generic 버전**
-> 도메인 keyword detection 빼고 BIG/SMALL/MICRO 판정 + plan/context/tasks 3종 템플릿만. **STEP 1.5 (scope 질문 5종)** 추가: 기존 확장 vs 신규 / API 변경 / 외부 라이브러리 / 데이터 페칭 / 비기능 요구. stack 인터뷰는 사라졌지만 분기 품질 좌우 질문은 살림.
+> 도메인 keyword detection 빼고 BIG/SMALL/MICRO 판정 + plan/context/tasks 3종 템플릿만. **STEP 1.5 (scope 인터뷰)** 추가: 기존 확장 vs 신규 · API 변경 · 외부 라이브러리 · 데이터 페칭 · 비기능 요구. stack 인터뷰는 사라졌지만 분기 품질 좌우 질문은 살림.
 
 > **`.claude` 추적 기본 비활성**
 > 클론한 사람이 settings 손볼 때 self-block 방지. README 에 "harness 자체 추적 활성화 (선택)" 섹션 — 안정화 후 직접 켜는 옵션.

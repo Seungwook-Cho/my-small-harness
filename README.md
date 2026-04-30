@@ -73,7 +73,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start(["/dev-docs &lt;작업 설명&gt;"])
-    Interview["STEP 0 · active 확인<br/>STEP 1 · 모듈 (web/api)<br/>STEP 1.5 · scope 5질문<br/>STEP 2 · 분기 판정"]
+    Interview["STEP 0 · active 확인<br/>STEP 1 · 모듈 (web/api)<br/>STEP 1.5 · scope 인터뷰<br/>STEP 2 · 분기 판정"]
     Micro["<b>MICRO</b><br/>1–2줄 · 단일 파일"]
     Small["<b>SMALL</b><br/>2–3파일 · 단일 레이어"]
     Big["<b>BIG</b><br/>다파일 · 다레이어"]
@@ -94,7 +94,7 @@ flowchart TD
     Big --> BigPlan --> BigImp --> BigVer --> BigCommit
 ```
 
-> **STEP 1.5 scope 5질문:** 기존 확장 vs 신규 / API 변경 / 외부 lib 추가 / 데이터 페칭 패턴 / 비기능 요구
+> **STEP 1.5 scope 인터뷰 (5문항):** 기존 확장 vs 신규 · API 변경 · 외부 lib 추가 · 데이터 페칭 패턴 · 비기능 요구
 
 | 축 | BIG | SMALL | MICRO |
 |----|-----|-------|-------|
@@ -127,7 +127,7 @@ scope 는 [`scope-for-staged.sh`](.claude/hooks/scope-for-staged.sh) 가 staged 
 [세션 시작]  CLAUDE.md 자동 로드, dev/active/ 진행 중이면 이어서
 
 1. /dev-docs 다크모드 토글
-   → 스킬이 모듈 + scope 5질문 + BIG/SMALL/MICRO 판정
+   → 스킬이 모듈 + scope 인터뷰 + BIG/SMALL/MICRO 판정
    → BIG 이면 dev/active/dark-mode-toggle/ 3종 자동 생성
 
 2. "Phase 1 부터 시작해줘"
