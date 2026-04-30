@@ -119,6 +119,33 @@ scope 는 [`scope-for-staged.sh`](.claude/hooks/scope-for-staged.sh) 가 staged 
 
 ---
 
+## 사용법
+
+```
+[세션 시작]  CLAUDE.md 자동 로드, dev/active/ 진행 중이면 이어서
+
+1. /dev-docs 다크모드 토글
+   → 스킬이 모듈 + scope 5질문 + BIG/SMALL/MICRO 판정
+   → BIG 이면 dev/active/dark-mode-toggle/ 3종 자동 생성
+
+2. "Phase 1 부터 시작해줘"
+   → Coordinator 가 implementer 디스패치
+   → 완료 후 verifier 디스패치
+   → PASS → commit + history 기록
+
+3. 작업 끝 → tasks.md 전부 체크 → stop-clear-check 가 /clear 추천
+```
+
+자주 쓰는 패턴:
+
+```
+"PROJECT_KNOWLEDGE.md 랑 dev/active/ 확인하고 현재 상태 알려줘"
+"dev/active/<task>/ 보고 Phase 2 부터 이어서 진행해"
+"이 에러 auto-error-resolver 로 고쳐줘"
+```
+
+---
+
 ## Scope 명시 — out of scope
 
 **솔로 dev 의 productivity tool.** 팀 협업(PR 자동 생성 / 코드리뷰 봇 / CI gating) 은 **out of scope** — GitHub native 도구가 잘 함. 이 harness 가 채우는 빈자리는 (a) Claude Code 와 일할 때의 분업 + 자동화, (b) `git log` 로 복원 안 되는 정보 보존 두 개로 한정.
@@ -206,33 +233,6 @@ stop hook 이 `[scope] type: ...` 형식 강제. prefix 누락 시 reject + amen
 ### harness 자체 추적 활성화 (선택)
 
 기본값은 `.claude/` 가 추적 대상에서 빠짐 (첫 사용자 self-block 방지). 워크플로 안정화 후 켜고 싶다면 `modules.conf.sh` 에 `\.claude` / `harness` 스코프 + 본인 history 파일 매핑 추가.
-
----
-
-## 한국어 사용법
-
-```
-[세션 시작]  CLAUDE.md 자동 로드, dev/active/ 진행 중이면 이어서
-
-1. /dev-docs 다크모드 토글
-   → 스킬이 모듈 + scope 5질문 + BIG/SMALL/MICRO 판정
-   → BIG 이면 dev/active/dark-mode-toggle/ 3종 자동 생성
-
-2. "Phase 1 부터 시작해줘"
-   → Coordinator 가 implementer 디스패치
-   → 완료 후 verifier 디스패치
-   → PASS → commit + history 기록
-
-3. 작업 끝 → tasks.md 전부 체크 → stop-clear-check 가 /clear 추천
-```
-
-자주 쓰는 패턴:
-
-```
-"PROJECT_KNOWLEDGE.md 랑 dev/active/ 확인하고 현재 상태 알려줘"
-"dev/active/<task>/ 보고 Phase 2 부터 이어서 진행해"
-"이 에러 auto-error-resolver 로 고쳐줘"
-```
 
 ---
 
