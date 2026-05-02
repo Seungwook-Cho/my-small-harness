@@ -90,9 +90,9 @@ GSD(`gsd-plan-checker`, `gsd-executor`, `gsd-context-monitor`)와 Superpowers(`i
 
 ---
 
-## Phase 5 — 대규모 리팩토링: context → history 전환과 hook 재설계
+## Phase 5 — 대규모 리팩토링: context → history와 hook 재설계
 
-### 5-1: context.md → history.md 전환
+### 5-1: context.md → history.md
 
 > **shell hook 자동 기록을 폐기하고, AI가 자신의 native context로 직접 작성하는 모델로 전환**
 >
@@ -113,7 +113,7 @@ GSD(`gsd-plan-checker`, `gsd-executor`, `gsd-context-monitor`)와 Superpowers(`i
 - 죽은 hook 2개(`stop-context-update.sh`, `stop-context-summary-check.sh`) 삭제 — 감시 대상 사라져 존재 이유 소멸.
 - 루트 `CLAUDE.md` 124 → 104줄.
 
-### 5-5: 커밋 포맷과 history 작성 원칙 확립
+### 5-5: 커밋 포맷과 history 작성 원칙
 
 > **`[scope] type: 한국어 한 줄` 강제** — 기존 메시지가 들쭉날쭉했다(`Fix:`, `Task 4-5:`, `Update:`). scope/type 자동 추출이 어려웠다. **`commit-msg` hook 도입 기각** — Claude가 커밋하므로 텍스트 규칙으로 충분했고, 별도 hook은 과잉이라고 판단했다.
 
@@ -150,7 +150,7 @@ GSD(`gsd-plan-checker`, `gsd-executor`, `gsd-context-monitor`)와 Superpowers(`i
 내부 harness를 외부용으로 추출했다. 도메인 정보를 분리하고 일관된 narrative로 정리했다.
 
 > **stack-agnostic → Next.js / React / TypeScript / pnpm 락인**
-> 공개 시 첫인상을 sharp하게 가져가는 것이 중요했다. "stack-agnostic"은 모호하고 demoability가 낮았다. 청중 손실(Go/Swift/Python)을 감수하고 더 sharp한 pitch를 선택했다. README 첫 줄에 "패턴은 stack 무관, 포함된 에이전트만 Next.js 전제"라고 명시했다 — 다른 스택은 본문을 swap하면 된다.
+> 공개 시 첫인상을 sharp하게 가져가는 것이 중요했다. "stack-agnostic"은 모호하고 demoability가 낮았다. 청중 손실(Go/Swift/Python)을 감수하고 더 sharp한 pitch를 선택했다. README 상단에 "패턴은 stack 무관, 포함된 에이전트만 Next.js 전제"라고 명시했다 — 다른 스택은 본문을 swap하면 된다.
 
 > **planner 에이전트 삭제 — 정합성 정리**
 > Phase 2 결정에도 불구하고 `planner.md`가 남아 있어 `CLAUDE.md` / `README.md` / agents README 사이에 모순이 있었다. plan 작성 책임은 dev-docs 스킬이 담당한다.

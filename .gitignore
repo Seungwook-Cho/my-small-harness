@@ -19,4 +19,5 @@ dev/done/
 # 예외: 진화 기록 reference doc + 템플릿
 dev/history/*.md
 !dev/history/harness_history_generalized.md
+!dev/history/harness_history_generalized_en.md
 !dev/history/TEMPLATE.md
