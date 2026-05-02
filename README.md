@@ -1,6 +1,12 @@
-> For English version, see [README.en.md](README.en.md).
-
 # my-small-harness
+
+> [!NOTE]
+> **A lightweight harness for adapting Claude Code to a personal development workflow on Next.js / React / TypeScript / pnpm projects.**
+>
+> Coordinator handles planning, judgment, and dispatch; implementer / verifier / error fixer handle implementation, verification, and mechanical fixes in fresh contexts.
+> `/dev-docs` splits work into BIG / SMALL / MICRO so that simple edits stay light, while multi-file changes are handled through plan / context / tasks documents.
+>
+> For English version, see [README.en.md](README.en.md).
 
 **Next.js / React / TypeScript / pnpm 프로젝트에서 Claude Code를 개인 개발 workflow에 맞게 쓰기 위해 만든 lightweight harness.**
 
