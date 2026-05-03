@@ -18,29 +18,35 @@ As a session got long, Claude's answer quality dropped noticeably. `/clear` reco
 
 → Keep `plan.md`, `context.md`, and `tasks.md` as separate files under `dev/active/<task>/`, and re-inject only the necessary parts when starting from a fresh context. **Forget what can be safely forgotten; explicitly preserve only the context worth carrying forward.**
 
-### 2. Model split — stronger models for judgment, cheaper models for repetitive work
-
-After splitting tasks across models in personal projects, I found that Sonnet was often sufficient for actual implementation. Opus provided more noticeable value in planning, task decomposition, dispatch, and interpreting results than in writing code directly for long stretches.
-
-→ Coordinator focuses on planning, judgment, and dispatch; implementation, verification, and TS error fixes are delegated to separate agents. The aim is to split work by role to reduce cost while keeping the workflow stable.
-
-### 3. For solo work, commits plus history notes were more practical than PRs
-
-When Claude reverts changes or refers back to previous work, commits are the most useful unit of history. For solo work, however, opening and merging a PR for every change feels heavy relative to the amount of information it preserves.
-
-→ Commits record WHAT, while `history.md` records WHY · alternatives considered · failed attempts. `history.md` is treated as a working note rather than something to push, so it can be reused as context in the next session without polish overhead.
-
-### 4. I wanted the workflow to scale with task size
+### 2. I wanted the workflow to scale with task size
 
 Existing AI coding harnesses were useful for complex tasks, but some of them still applied the same planning-heavy flow to 1–2 line fixes where the cause was already clear. For personal work, I wanted a workflow that could stay lightweight when the task was small.
 
 → `/dev-docs` first classifies a task as BIG / SMALL / MICRO. MICRO is handled directly by Coordinator, SMALL goes through one implementer dispatch, and only BIG tasks go through the full plan / context / tasks pipeline.
 
-### 5. I wanted to prevent missing commits or history notes after a "done" report
+### 3. Opus for judgment, Sonnet/Haiku for execution
+
+After splitting tasks across models in personal projects, I found that Sonnet was often sufficient for actual implementation. Opus provided more noticeable value in planning, task decomposition, dispatch, and interpreting results than in writing code directly.
+
+→ Coordinator focuses on planning, judgment, and dispatch; implementation, verification, and error fixes are delegated to separate agents. The aim is to split work by role to reduce cost while keeping the workflow stable.
+
+### 4. For solo work, commits plus history notes were more practical than PRs
+
+When Claude needed to undo work or refer back to previous changes, commits were the most useful unit of history. For solo work, however, opening and merging a PR for every change felt heavy relative to the records it left behind.
+
+→ Commits record WHAT, while `history.md` records WHY · alternatives considered · failed attempts. `history.md` is treated as a working note rather than something to push, so it can be reused as context in the next session without polish overhead.
+
+### 5. I wanted to mechanically prevent missing commits or history notes after a "done" report
 
 Claude would sometimes report a task as complete but skip the commit, or make a commit and end the session without writing to `history.md`. In the next session, the reason behind the change was gone — `git log` alone made it hard to recover the surrounding judgment.
 
-→ The Stop hook (`stop-commit-history-check.sh`) checks for both commit and history at session-end. If module code was modified without a commit, it blocks; if there is a commit but no history, it blocks once more. The Stop hook's single-block-per-session limit is worked around with a per-session state file, enabling sequential two-stage checks.
+→ The Stop hook (`stop-commit-history-check.sh`) checks for both commit and history at session-end. If module code was modified without a commit, it blocks; if there is a commit but no history, it blocks once more. Since a Stop hook can only block once, a per-session state file works around that limit and verifies commit → history in two sequential stages.
+
+### 6. Small fixes kept silently breaking other things in the same module
+
+In the same module, a small change would sometimes regress a seemingly unrelated feature. Without anything written down, I had to guess the impact range every time, and dependencies or invariants that needed repeated checking were easy to miss.
+
+→ For modules where regressions are frequent, optionally place a `<module>/SPEC.md`. With a behavior spec and Invariants (dependency map · invariants · conflict-detection rules) written ahead of time, `/dev-docs` auto-injects it into the dispatch `[CONTEXT]`, and the Coordinator also reads it from the pre-task checklist. The goal is to make every branch (MICRO / SMALL / BIG) decide on the same shared information.
 
 ---
 
@@ -123,6 +129,10 @@ History is treated as a working-note layer, not a polished external document. By
 
 If you edit 3 or more files in the same module without `/dev-docs`, a PostToolUse hook stops the work and asks for `/dev-docs`. It detects when a small fix is growing into a multi-file change, and nudges the workflow over to BIG.
 
+### (Optional) Per-module `SPEC.md` for regression prevention
+
+If "fixing one thing breaks another" keeps happening in the same module, start a `<module>/SPEC.md` from the [dev/templates/SPEC.md](dev/templates/SPEC.md) template. Write down the behavior spec, dependency map, invariants, and conflict-detection rules ahead of time, and when a `SPEC.md` exists in the module, `/dev-docs` auto-includes it in the dispatch `[CONTEXT]` so implementer reads it before working. Recommended only for modules where regression risk is real — overkill for small modules.
+
 ---
 
 ## Usage
@@ -176,9 +186,11 @@ I split this repo out so I can reuse the workflow in future Next.js projects and
 ├── rules/coordinator.md    # Coordinator operating rules
 └── skills/dev-docs/        # /dev-docs skill (BIG/SMALL/MICRO branching + templates)
 dev/
-└── history/
-    ├── harness_history_generalized.md  # evolution log (reference doc)
-    └── TEMPLATE.md                      # template for starting a new module's history
+├── history/
+│   ├── harness_history_generalized.md  # evolution log (reference doc)
+│   └── TEMPLATE.md                      # template for starting a new module's history
+└── templates/
+    └── SPEC.md                          # (optional) per-module regression-prevention spec template
 ```
 
 Only `dev-docs` is included under `.claude/skills/`. Stack-specific implementation guidelines depend heavily on project domain, so they are expected to be written separately per project.
