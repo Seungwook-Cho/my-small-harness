@@ -32,9 +32,9 @@ Coordinator는 계획·판단·디스패치를 맡고, implementer / verifier / 
 
 → `/dev-docs`가 BIG / SMALL / MICRO를 먼저 판정한다. MICRO는 Coordinator가 직접 처리하고, SMALL은 implementer 1회, BIG만 plan / context / tasks 기반의 풀 파이프라인으로 진행한다.
 
-### 3. 고비용 모델은 판단에, 저비용 모델은 반복 작업에
+### 3. Opus 4.7은 판단에, Sonnet/Haiku는 실행에
 
-개인 프로젝트에서 여러 작업을 나눠 맡겨본 결과, 실제 구현은 Sonnet으로도 충분한 경우가 많았다. 반면 Opus는 직접 코드를 작성하는 것보다 plan 작성, 작업 분해, dispatch, 결과 해석에서 더 큰 체감 이점이 있었다.
+개인 프로젝트에서 여러 작업을 나눠 맡겨본 결과, 실제 구현은 Sonnet으로도 충분한 경우가 많았다. 반면 Opus 4.7은 직접 코드를 작성하는 것보다 plan 작성, 작업 분해, dispatch, 결과 해석에서 더 큰 체감 이점이 있었다.
 
 → Coordinator는 계획·판단·디스패치에 집중하고, 구현·검증·에러 수정은 별도 에이전트에 맡겼다. 모델을 역할별로 나눠 비용을 줄이면서도 작업 흐름의 안정성을 유지하는 것이 목표였다.
 
@@ -62,7 +62,7 @@ Claude가 작업 완료를 보고한 뒤 commit을 빠뜨리거나, commit만 �
 
 ### Coordinator + 서브에이전트 분업
 
-메인 세션(Opus)은 **대화·판단·디스패치·plan 작성**만. 실제 코딩·검증·에러 수정은 fresh context 의 별도 에이전트로 분리. Coordinator context 를 빌드 로그/grep 결과로 더럽히지 않기 위함.
+메인 세션(Opus 4.7)은 **대화·판단·디스패치·plan 작성**만. 실제 코딩·검증·에러 수정은 fresh context 의 별도 에이전트로 분리. Coordinator context 를 빌드 로그/grep 결과로 더럽히지 않기 위함.
 
 ```mermaid
 flowchart TD
@@ -209,10 +209,10 @@ dev/
 
 | 에이전트 | 기본 모델 | 역할 |
 |---------|-----------|------|
-| `implementer` | Sonnet-class | SMALL/BIG 태스크 구현 + 빌드 + 커밋 |
-| `verifier` | Sonnet-class | plan과 실제 코드의 독립 대조 |
-| `auto-error-resolver` | Haiku-class | TypeScript 컴파일 에러의 기계적 수정 |
-| `frontend-error-fixer` | Sonnet-class | Next.js / React 빌드·런타임 에러 진단 |
+| `implementer` | Sonnet | SMALL/BIG 태스크 구현 + 빌드 + 커밋 |
+| `verifier` | Sonnet | plan과 실제 코드의 독립 대조 |
+| `auto-error-resolver` | Haiku | TypeScript 컴파일 에러의 기계적 수정 |
+| `frontend-error-fixer` | Sonnet | Next.js / React 빌드·런타임 에러 진단 |
 
 자세한 규칙은 [.claude/rules/coordinator.md](.claude/rules/coordinator.md).
 

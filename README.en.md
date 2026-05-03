@@ -24,9 +24,9 @@ Existing AI coding harnesses were useful for complex tasks, but some of them sti
 
 → `/dev-docs` first classifies a task as BIG / SMALL / MICRO. MICRO is handled directly by the Coordinator, SMALL goes through one implementer dispatch, and only BIG tasks go through the full plan / context / tasks pipeline.
 
-### 3. Stronger models for judgment, cheaper models for execution
+### 3. Opus 4.7 for judgment, Sonnet/Haiku for execution
 
-After splitting tasks across models in personal projects, I found that Sonnet was often sufficient for implementation work. Opus provided more noticeable value in planning, task decomposition, dispatch, and interpreting results than in writing code directly.
+After splitting tasks across models in personal projects, I found that Sonnet was often sufficient for implementation work. Opus 4.7 provided more noticeable value in planning, task decomposition, dispatch, and interpreting results than in writing code directly.
 
 → Coordinator focuses on planning, judgment, and dispatch; implementation, verification, and error fixes are delegated to separate agents. The aim is to split work by role, reduce cost, and keep the workflow stable.
 
@@ -54,16 +54,16 @@ In the same module, a small change would sometimes regress a seemingly unrelated
 
 ### Coordinator + subagent split
 
-The main session, acting as the Coordinator, handles only **conversation, judgment, dispatch, and plan writing**. Actual coding, verification, and error fixes are delegated to separate fresh-context agents so the Coordinator context does not get polluted by build logs, grep output, and mechanical error traces.
+The main session, running on Opus 4.7, handles only **conversation, judgment, dispatch, and plan writing**. Actual coding, verification, and error fixes are delegated to separate fresh-context agents so the Coordinator context does not get polluted by build logs, grep output, and mechanical error traces.
 
 ```mermaid
 flowchart TD
     User([User])
-    Coord["<b>Coordinator</b><br/>planning · judgment · dispatch"]
-    Imp["<b>implementer</b><br/>single task · fresh context<br/>build + commit · self-fix ≤ 2x<br/>DONE / NEEDS_CTX / BLOCKED"]
-    Ver["<b>verifier</b><br/>independent plan-vs-code check<br/>stub / completeness review<br/>PASS / FAIL"]
-    AER["<b>auto-error-resolver</b><br/>mechanical TypeScript compile-error fixes"]
-    FEF["<b>frontend-error-fixer</b><br/>Next.js build / runtime errors"]
+    Coord["<b>Coordinator</b> (Opus 4.7)<br/>planning · judgment · dispatch"]
+    Imp["<b>implementer</b> (Sonnet)<br/>single task · fresh context<br/>build + commit · self-fix ≤ 2x<br/>DONE / NEEDS_CTX / BLOCKED"]
+    Ver["<b>verifier</b> (Sonnet)<br/>independent plan-vs-code check<br/>stub / completeness review<br/>PASS / FAIL"]
+    AER["<b>auto-error-resolver</b> (Haiku)<br/>mechanical TypeScript compile-error fixes"]
+    FEF["<b>frontend-error-fixer</b> (Sonnet)<br/>Next.js build / runtime errors"]
 
     User --> Coord
     Coord -- dispatch --> Imp
@@ -202,10 +202,10 @@ Only `dev-docs` is bundled under `.claude/skills/`. Stack-specific implementatio
 
 | Agent | Default model | Role |
 |-------|---------------|------|
-| `implementer` | Sonnet-class | SMALL/BIG task implementation + build + commit |
-| `verifier` | Sonnet-class | independent comparison of plan and actual code |
-| `auto-error-resolver` | Haiku-class | mechanical fixes for TypeScript compile errors |
-| `frontend-error-fixer` | Sonnet-class | Next.js / React build & runtime error diagnosis |
+| `implementer` | Sonnet | SMALL/BIG task implementation + build + commit |
+| `verifier` | Sonnet | independent comparison of plan and actual code |
+| `auto-error-resolver` | Haiku | mechanical fixes for TypeScript compile errors |
+| `frontend-error-fixer` | Sonnet | Next.js / React build & runtime error diagnosis |
 
 Detailed rules: [.claude/rules/coordinator.md](.claude/rules/coordinator.md).
 
