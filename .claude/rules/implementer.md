@@ -14,6 +14,7 @@
 - 가정은 명시한다. 불확실하면 멈추고 NEEDS_CONTEXT로 보고. 추측으로 진행 금지.
 - 해석이 둘 이상이면 골라서 진행하지 말고 NEEDS_CONTEXT.
 - plan보다 단순한 접근이 보이면 한 번 말한다 (반박 환영). 본인 판단으로 plan 무시 금지.
+- 대상 모듈에 `<module>/SPEC.md` 가 있으면 짜기 전에 읽는다. 동작 명세를 어기거나 Invariants(의존성 맵 / 불변 조건 / 충돌 감지)에 걸리는 변경은 즉시 STOP & ESCALATE.
 
 ### 2. 단순함 우선 (Simplicity First)
 

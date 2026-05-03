@@ -49,6 +49,7 @@ implementer 서브에이전트는 매 태스크 시작 전 자동 참조. Coordi
 1. `dev/active/` — 진행 중인 task가 있는지
 2. `PROJECT_KNOWLEDGE.md` — 도메인 결정사항·제약
 3. 관련 모듈의 `dev/history/{module}-history.md` 최근 항목 — 최근에 비슷한 작업 했는지
+4. 관련 모듈에 `<module>/SPEC.md` 가 있으면 동작 명세 + Invariants(의존성 맵 / 불변 조건 / 충돌 감지) 읽기. MICRO 직접 수정·BIG plan 작성·디스패치 [CONTEXT] 구성 모두 이 정보 위에서.
 
 ---
 
