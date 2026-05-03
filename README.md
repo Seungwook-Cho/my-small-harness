@@ -26,35 +26,35 @@ Coordinator는 계획·판단·디스패치를 맡고, implementer / verifier / 
 
 → `dev/active/<task>/` 아래에 `plan.md`, `context.md`, `tasks.md`를 분리해 두고, fresh context 시작 시 필요한 정보만 다시 주입한다. **잊어도 되는 건 잊고, 보존할 가치 있는 것만 명시적으로 재사용한다.**
 
-### 2. 모델 분업 — 고비용 모델은 판단에, 저비용 모델은 반복 작업에
+### 2. 작업 크기에 따라 workflow 무게를 다르게 가져가고 싶었다
 
-개인 프로젝트에서 여러 작업을 나눠 맡겨본 결과, 실제 구현은 Sonnet으로도 충분한 경우가 많았다. 반면 Opus는 직접 코드를 오래 작성하는 것보다 plan 작성, 작업 분해, dispatch, 결과 해석에서 더 큰 체감 이점이 있었다.
-
-→ Coordinator는 계획·판단·디스패치에 집중하고, 구현·검증·TS 에러 수정은 별도 에이전트에 맡겼다. 모델을 역할별로 나눠 비용을 줄이면서도 작업 흐름의 안정성을 유지하는 것이 목표였다.
-
-### 3. 솔로 작업에서는 commit + history 기록이 더 실용적이었다
-
-Claude가 revert하거나 변경 이력을 참조할 때는 commit 단위가 가장 유용했다. 반면 개인 작업에서 매번 PR을 만들고 머지하는 흐름은 기록 대비 절차가 무겁게 느껴졌다.
-
-→ commit은 WHAT을 남기고, `history.md`는 WHY · 검토한 대안 · 실패한 시도를 남기는 역할로 분리했다. `history.md`는 push 대상이 아닌 working note로 두어, 정제 부담 없이 다음 세션의 context로 재사용할 수 있게 했다.
-
-### 4. 작업 크기에 따라 workflow 무게를 다르게 가져가고 싶었다
-
-기존 AI coding harness들은 복잡한 작업에는 유용했지만, 원인이 명확한 1–2줄 수정에도 동일한 planning 절차가 도는 경우가 있었다. 개인 작업에서는 작업 크기에 따라 더 가볍게 시작할 수 있는 분기가 필요했다.
+기존 AI coding harness들은 복잡한 작업에는 유용했지만, 원인이 명확한 1–2줄 수정에도 동일한 planning 절차를 거치는 경우가 있었다. 개인 작업에서는 작업 크기에 따라 더 가볍게 시작할 수 있는 분기가 필요했다.
 
 → `/dev-docs`가 BIG / SMALL / MICRO를 먼저 판정한다. MICRO는 Coordinator가 직접 처리하고, SMALL은 implementer 1회, BIG만 plan / context / tasks 기반의 풀 파이프라인으로 진행한다.
 
-### 5. 완료 보고 이후 commit / history 누락을 막고 싶었다
+### 3. Opus는 판단에, Sonnet/Haiku는 실행에
+
+개인 프로젝트에서 여러 작업을 나눠 맡겨본 결과, 실제 구현은 Sonnet으로도 충분한 경우가 많았다. 반면 Opus는 직접 코드를 작성하는 것보다 plan 작성, 작업 분해, dispatch, 결과 해석에서 더 큰 체감 이점이 있었다.
+
+→ Coordinator는 계획·판단·디스패치에 집중하고, 구현·검증·에러 수정은 별도 에이전트에 맡겼다. 모델을 역할별로 나눠 비용을 줄이면서도 작업 흐름의 안정성을 유지하는 것이 목표였다.
+
+### 4. 솔로 작업에서는 commit + history 기록이 더 실용적이었다
+
+Claude가 작업을 되돌리거나 변경 이력을 참조할 때 commit 단위가 가장 유용했다. 반면 개인 작업에서 매번 PR을 만들고 머지하는 흐름은 남는 기록에 비해 절차가 무거웠다.
+
+→ commit은 WHAT을 남기고, `history.md`는 WHY · 검토한 대안 · 실패한 시도를 남기는 역할로 분리했다. `history.md`는 push 대상이 아닌 working note로 두어, 정제 부담 없이 다음 세션의 context로 재사용할 수 있게 했다.
+
+### 5. 완료 보고 이후 commit / history 누락을 기계적으로 막고 싶었다
 
 Claude가 작업 완료를 보고한 뒤 commit을 빠뜨리거나, commit만 하고 `history.md` 기록을 누락한 채 세션을 끝내는 경우가 있었다. 다음 세션에서 보면 "이 변경을 왜 했는지"가 사라져 있었고, `git log`만으로는 판단 맥락을 복원하기 어려웠다.
 
-→ Stop hook (`stop-commit-history-check.sh`)으로 세션 종료 시점에 commit과 history 기록을 확인한다. 모듈 코드 수정 후 commit이 없으면 차단하고, commit은 있지만 history가 없으면 한 번 더 차단한다. Stop hook의 1회 차단 한계는 세션별 state 파일로 우회해 두 단계 순차 확인이 가능하게 했다.
+→ Stop hook(`stop-commit-history-check.sh`)으로 세션 종료 시점에 commit과 history 기록을 확인한다. 모듈 코드 수정 후 commit이 없으면 차단하고, commit은 있지만 history가 없으면 한 번 더 차단한다. Stop hook이 한 번만 차단할 수 있는 제약은 세션별 state 파일로 우회해, commit → history를 두 단계로 순차 확인한다.
 
 ### 6. 한 곳을 수정하면 다른 곳이 조용히 깨지는 일이 반복됐다
 
 같은 모듈에서 작은 수정 한 번에 무관해 보이던 다른 기능이 회귀하는 경우가 있었다. 매번 영향 범위를 머릿속에서 추측해 작업하다 보니 빠뜨림이 잦았다.
 
-→ 회귀가 잦은 모듈에 한해 `<module>/SPEC.md`(선택)에 동작 명세와 Invariants(의존성 맵 · 불변 조건 · 충돌 감지 규칙)를 미리 적어둔다. `/dev-docs`가 디스패치 `[CONTEXT]`에 자동 포함시키고, Coordinator도 작업 시작 전 체크리스트에서 같이 읽는다. 모든 분기(MICRO/SMALL/BIG)에서 같은 정보 위에서 판단하도록 만든 것이 목적이다. 템플릿: [dev/templates/SPEC.md](dev/templates/SPEC.md).
+→ 회귀가 잦은 모듈에 한해 `<module>/SPEC.md`를 선택적으로 둔다. 동작 명세와 Invariants(의존성 맵 · 불변 조건 · 충돌 감지 규칙)를 미리 적어두면, `/dev-docs`가 디스패치 `[CONTEXT]`에 자동 포함시키고 Coordinator도 작업 시작 전 체크리스트에서 같이 읽는다. 모든 분기(MICRO / SMALL / BIG)에서 같은 정보를 바탕으로 판단하도록 만드는 것이 목적이다.
 
 ---
 
