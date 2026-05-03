@@ -25,6 +25,13 @@
 
 ---
 
+## Implementer 행동 원칙
+
+코드 작성 시 따르는 4원칙(Think Before / Simplicity / Surgical / Goal-Driven): [.claude/rules/implementer.md](.claude/rules/implementer.md).
+implementer 서브에이전트는 매 태스크 시작 전 자동 참조. Coordinator도 MICRO 직접 작업 / `/dev-docs` 없는 직접 처리 시 동일하게 따른다.
+
+---
+
 ## dev-docs 라이프사이클
 
 | 분기 | 기준 | 처리 주체 |
