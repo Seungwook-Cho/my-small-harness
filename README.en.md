@@ -2,17 +2,17 @@
 
 **A lightweight harness for adapting Claude Code to a personal development workflow on Next.js / React / TypeScript / pnpm projects.**
 
-Coordinator handles planning, judgment, and dispatch; implementer / verifier / error fixer handle implementation, verification, and mechanical fixes in fresh contexts.
+The Coordinator handles planning, judgment, and dispatch; the implementer / verifier / error fixer handle implementation, verification, and mechanical fixes in fresh contexts.
 `/dev-docs` splits work into BIG / SMALL / MICRO so that simple edits stay light, while multi-file changes are handled through plan / context / tasks documents.
 
 > This repo is not a general-purpose package or a team framework. It is a personal workflow experiment built from using Claude Code in real development work.
-> The goal is not to hand design decisions over to AI, but to keep the developer responsible for problem definition and direction while using AI to accelerate execution, verification, and decision records.
+> The goal is not to hand design decisions over to AI, but to keep the developer responsible for problem definition and direction while using AI to accelerate execution, verification, and decision recording.
 
 ---
 
 ## Why I built it — from real usage
 
-### 1. The trade-off between fresh context and retained work context
+### 1. The trade-off between fresh context and retained task context
 
 As a session got long, Claude's answer quality dropped noticeably. `/clear` recovered it via fresh context, but I had to re-explain previously agreed plans / decisions / progress.
 
@@ -22,13 +22,13 @@ As a session got long, Claude's answer quality dropped noticeably. `/clear` reco
 
 Existing AI coding harnesses were useful for complex tasks, but some of them still applied the same planning-heavy flow to 1–2 line fixes where the cause was already clear. For personal work, I wanted a workflow that could stay lightweight when the task was small.
 
-→ `/dev-docs` first classifies a task as BIG / SMALL / MICRO. MICRO is handled directly by Coordinator, SMALL goes through one implementer dispatch, and only BIG tasks go through the full plan / context / tasks pipeline.
+→ `/dev-docs` first classifies a task as BIG / SMALL / MICRO. MICRO is handled directly by the Coordinator, SMALL goes through one implementer dispatch, and only BIG tasks go through the full plan / context / tasks pipeline.
 
-### 3. Opus for judgment, Sonnet/Haiku for execution
+### 3. Stronger models for judgment, cheaper models for execution
 
-After splitting tasks across models in personal projects, I found that Sonnet was often sufficient for actual implementation. Opus provided more noticeable value in planning, task decomposition, dispatch, and interpreting results than in writing code directly.
+After splitting tasks across models in personal projects, I found that Sonnet was often sufficient for implementation work. Opus provided more noticeable value in planning, task decomposition, dispatch, and interpreting results than in writing code directly.
 
-→ Coordinator focuses on planning, judgment, and dispatch; implementation, verification, and error fixes are delegated to separate agents. The aim is to split work by role to reduce cost while keeping the workflow stable.
+→ Coordinator focuses on planning, judgment, and dispatch; implementation, verification, and error fixes are delegated to separate agents. The aim is to split work by role, reduce cost, and keep the workflow stable.
 
 ### 4. For solo work, commits plus history notes were more practical than PRs
 
@@ -36,17 +36,17 @@ When Claude needed to undo work or refer back to previous changes, commits were 
 
 → Commits record WHAT, while `history.md` records WHY · alternatives considered · failed attempts. `history.md` is treated as a working note rather than something to push, so it can be reused as context in the next session without polish overhead.
 
-### 5. I wanted to mechanically prevent missing commits or history notes after a "done" report
+### 5. I wanted to enforce commits and history notes after a "done" report
 
 Claude would sometimes report a task as complete but skip the commit, or make a commit and end the session without writing to `history.md`. In the next session, the reason behind the change was gone — `git log` alone made it hard to recover the surrounding judgment.
 
-→ The Stop hook (`stop-commit-history-check.sh`) checks for both commit and history at session-end. If module code was modified without a commit, it blocks; if there is a commit but no history, it blocks once more. Since a Stop hook can only block once, a per-session state file works around that limit and verifies commit → history in two sequential stages.
+→ The Stop hook (`stop-commit-history-check.sh`) checks for both commit and history at session-end. If module code was modified without a commit, it blocks; if there is a commit but no history, it blocks once more. Since a Stop hook can only block once, a per-session state file works around that limit and verifies commit → history as two sequential stages.
 
-### 6. Small fixes kept silently breaking other things in the same module
+### 6. Small fixes kept causing quiet regressions in the same module
 
 In the same module, a small change would sometimes regress a seemingly unrelated feature. Without anything written down, I had to guess the impact range every time, and dependencies or invariants that needed repeated checking were easy to miss.
 
-→ For modules where regressions are frequent, optionally place a `<module>/SPEC.md`. With a behavior spec and Invariants (dependency map · invariants · conflict-detection rules) written ahead of time, `/dev-docs` auto-injects it into the dispatch `[CONTEXT]`, and the Coordinator also reads it from the pre-task checklist. The goal is to make every branch (MICRO / SMALL / BIG) decide on the same shared information.
+→ For modules where regressions are frequent, optionally add a `<module>/SPEC.md`. With a behavior spec and Invariants (dependency map · invariant conditions · conflict-detection rules) written ahead of time, `/dev-docs` auto-injects it into the dispatch `[CONTEXT]`, and the Coordinator also reads it from the pre-task checklist. The goal is to make every branch (MICRO / SMALL / BIG) decide on the same shared information.
 
 ---
 
@@ -54,16 +54,16 @@ In the same module, a small change would sometimes regress a seemingly unrelated
 
 ### Coordinator + subagent split
 
-The main session, running on Opus, handles only **conversation, judgment, dispatch, and plan writing**. Actual coding, verification, and error fixes are delegated to separate fresh-context agents so the Coordinator context does not get polluted by build logs, grep output, and mechanical error traces.
+The main session, acting as the Coordinator, handles only **conversation, judgment, dispatch, and plan writing**. Actual coding, verification, and error fixes are delegated to separate fresh-context agents so the Coordinator context does not get polluted by build logs, grep output, and mechanical error traces.
 
 ```mermaid
 flowchart TD
     User([User])
-    Coord["<b>Coordinator</b> (Opus 4.7)<br/>planning · judgment · dispatch"]
-    Imp["<b>implementer</b> (Sonnet)<br/>single task · fresh context<br/>build + commit · self-fix ≤ 2x<br/>DONE / NEEDS_CTX / BLOCKED"]
-    Ver["<b>verifier</b> (Sonnet)<br/>independent plan-vs-code check<br/>stub / completeness review<br/>PASS / FAIL"]
-    AER["<b>auto-error-resolver</b> (Haiku)<br/>mechanical TS compile-error fixes"]
-    FEF["<b>frontend-error-fixer</b> (Sonnet)<br/>Next.js build / runtime errors"]
+    Coord["<b>Coordinator</b><br/>planning · judgment · dispatch"]
+    Imp["<b>implementer</b><br/>single task · fresh context<br/>build + commit · self-fix ≤ 2x<br/>DONE / NEEDS_CTX / BLOCKED"]
+    Ver["<b>verifier</b><br/>independent plan-vs-code check<br/>stub / completeness review<br/>PASS / FAIL"]
+    AER["<b>auto-error-resolver</b><br/>mechanical TypeScript compile-error fixes"]
+    FEF["<b>frontend-error-fixer</b><br/>Next.js build / runtime errors"]
 
     User --> Coord
     Coord -- dispatch --> Imp
@@ -89,7 +89,7 @@ flowchart TD
     MicroAct["Coordinator edits directly<br/>+ pnpm typecheck<br/>+ [scope] commit"]
     SmallAct["1 implementer dispatch<br/>+ build + commit"]
     BigPlan["dev/active/&lt;task&gt;/<br/>plan.md · context.md · tasks.md"]
-    BigImp["implementer × N<br/>(parallel waves by depends)"]
+    BigImp["implementer × N<br/>(parallel waves by dependency)"]
     BigVer["verifier (fresh)<br/>PASS → next / FAIL → re-dispatch"]
     BigCommit["[scope] type: commit<br/>+ append history ## unsorted"]
 
@@ -109,7 +109,7 @@ flowchart TD
 | File count | 4+ | 2-3 | 1 (max 2) |
 | New files | yes | 0-1 | none |
 | Layers | API+UI+types | single | single file |
-| Ambiguity | unclear requirements | clear | both cause and fix pinned |
+| Ambiguity | unclear requirements | clear | cause and fix both identified |
 | Change kind | needs design | logic change | mechanical |
 
 Full rules: [.claude/skills/dev-docs/SKILL.md](.claude/skills/dev-docs/SKILL.md).
@@ -127,11 +127,11 @@ History is treated as a working-note layer, not a polished external document. By
 
 ### scope-escalation hook
 
-If you edit 3 or more files in the same module without `/dev-docs`, a PostToolUse hook stops the work and asks for `/dev-docs`. It detects when a small fix is growing into a multi-file change, and nudges the workflow over to BIG.
+If you edit 3 or more files in the same module without `/dev-docs`, a PostToolUse hook stops the work and asks for `/dev-docs`. It detects when a small fix is growing into a multi-file change and nudges the workflow toward BIG.
 
 ### (Optional) Per-module `SPEC.md` for regression prevention
 
-If "fixing one thing breaks another" keeps happening in the same module, start a `<module>/SPEC.md` from the [dev/templates/SPEC.md](dev/templates/SPEC.md) template. Write down the behavior spec, dependency map, invariants, and conflict-detection rules ahead of time, and when a `SPEC.md` exists in the module, `/dev-docs` auto-includes it in the dispatch `[CONTEXT]` so implementer reads it before working. Recommended only for modules where regression risk is real — overkill for small modules.
+If "fixing one thing breaks another" keeps happening in the same module, start a `<module>/SPEC.md` from the [dev/templates/SPEC.md](dev/templates/SPEC.md) template. Write down the behavior spec, dependency map, invariants, and conflict-detection rules ahead of time, and when a `SPEC.md` exists in the module, `/dev-docs` auto-includes it in the dispatch `[CONTEXT]` so the implementer reads it before working. Recommended only for modules where regression risk is real — overkill for small modules.
 
 ---
 
@@ -167,10 +167,11 @@ Frequent patterns:
 **A productivity tool for solo development.** Team-collaboration features such as auto PR creation, code-review bots, and CI gating are non-goals for this repo. Those areas are better handled by GitHub-native tools or existing CI/CD setups.
 
 This harness focuses on two gaps:
-(a) role separation and repetitive-task automation when working with Claude Code
+
+(a) role separation and repetitive-task automation when working with Claude Code  
 (b) preserving the WHY · alternatives · failed attempts that `git log` alone cannot recover
 
-**Stack assumption.** The harness patterns themselves — split / branch / hook / scope / history — are not strongly tied to any one stack. The agents and skills currently bundled, however, assume **Next.js / React / TypeScript / pnpm**. To apply this on a different stack, swap the bodies of `auto-error-resolver` / `frontend-error-fixer` / `dev-docs` for the build / verification tooling of that stack.
+**Stack assumption.** The harness patterns themselves — split / branch / hook / scope / history — are not strongly tied to any one stack. The agents and skills currently bundled, however, assume **Next.js / React / TypeScript / pnpm**. To apply this to a different stack, swap the internals of `auto-error-resolver` / `frontend-error-fixer` / `dev-docs` for that stack's build and verification tooling.
 
 I split this repo out so I can reuse the workflow in future Next.js projects and show how I structure AI-assisted development in practice. Module names, scopes, and history mappings are placeholders (`web` / `api`), so adapt them to your actual project structure.
 
@@ -193,7 +194,7 @@ dev/
     └── SPEC.md                          # (optional) per-module regression-prevention spec template
 ```
 
-Only `dev-docs` is included under `.claude/skills/`. Stack-specific implementation guidelines depend heavily on project domain, so they are expected to be written separately per project.
+Only `dev-docs` is bundled under `.claude/skills/`. Stack-specific implementation guidelines depend heavily on project domain, so they are expected to be written separately per project.
 
 `dev/active/` and `dev/done/` are gitignored. `/dev-docs` only creates the plan / context / tasks documents under `dev/active/<task>/` for tasks classified as BIG.
 
@@ -213,7 +214,7 @@ Detailed rules: [.claude/rules/coordinator.md](.claude/rules/coordinator.md).
 | Timing | File | Behavior |
 |--------|------|----------|
 | PreToolUse (Edit/Write) | `pre-env-protect.sh` | block edits to `.env*` |
-| PostToolUse (Edit/Write/Bash) | `post-scope-escalation.sh` | require `/dev-docs` once 3+ module files have been edited |
+| PostToolUse (Edit/Write/Bash) | `post-scope-escalation.sh` | require `/dev-docs` once 3 or more module files have been edited |
 | PostToolUse (all tools) | `context-monitor.js` | warn when remaining context is low |
 | Stop | `stop-clear-check.js` | suggest `/clear` once `tasks.md` is fully checked |
 | Stop | `stop-commit-history-check.sh` | enforce commit + history record after module code edits (state machine) |
@@ -263,7 +264,7 @@ Once your workflow stabilizes and you want to record changes to the harness itse
 
 ## Evolution log
 
-[dev/history/harness_history_generalized.md](dev/history/harness_history_generalized.md) collects the decisions, alternatives considered, and abandoned approaches behind this harness.
+[dev/history/harness_history_generalized.md](dev/history/harness_history_generalized.md) documents the decisions, alternatives considered, and abandoned approaches behind this harness.
 
 ## License
 

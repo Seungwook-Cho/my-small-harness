@@ -32,7 +32,7 @@ Coordinator는 계획·판단·디스패치를 맡고, implementer / verifier / 
 
 → `/dev-docs`가 BIG / SMALL / MICRO를 먼저 판정한다. MICRO는 Coordinator가 직접 처리하고, SMALL은 implementer 1회, BIG만 plan / context / tasks 기반의 풀 파이프라인으로 진행한다.
 
-### 3. Opus는 판단에, Sonnet/Haiku는 실행에
+### 3. 고비용 모델은 판단에, 저비용 모델은 반복 작업에
 
 개인 프로젝트에서 여러 작업을 나눠 맡겨본 결과, 실제 구현은 Sonnet으로도 충분한 경우가 많았다. 반면 Opus는 직접 코드를 작성하는 것보다 plan 작성, 작업 분해, dispatch, 결과 해석에서 더 큰 체감 이점이 있었다.
 
