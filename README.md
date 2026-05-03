@@ -131,6 +131,10 @@ history는 정제된 외부 문서가 아니라, 부담 없이 남기는 working
 
 `/dev-docs` 없이 같은 모듈의 파일을 3개 이상 편집하면 PostToolUse hook이 작업을 중단시키고 `/dev-docs` 사용을 요구한다. 작은 수정으로 시작한 작업이 다파일 변경으로 커지는 상황을 감지해, BIG workflow로 전환하도록 만든다.
 
+### (선택) 모듈별 `SPEC.md`로 회귀 방지
+
+같은 모듈에서 "한 곳을 수정하니 다른 곳이 깨졌다"가 반복되면 `<module>/SPEC.md`를 [dev/templates/SPEC.md](dev/templates/SPEC.md) 템플릿으로 시작. 동작 명세 + 의존성 맵 + 불변 조건 + 충돌 감지 규칙을 미리 적어두면, 모듈에 SPEC.md가 존재할 때 `/dev-docs`가 디스패치 `[CONTEXT]`에 자동 포함시켜 implementer가 작업 전에 읽는다. 회귀 위험이 큰 모듈에만 권장 — 작은 모듈엔 과잉.
+
 ---
 
 ## 사용법
@@ -184,9 +188,11 @@ history는 정제된 외부 문서가 아니라, 부담 없이 남기는 working
 ├── rules/coordinator.md    # Coordinator 운영 규칙
 └── skills/dev-docs/        # /dev-docs 스킬 (BIG/SMALL/MICRO 분기 + 템플릿)
 dev/
-└── history/
-    ├── harness_history_generalized.md  # 진화 기록 (참고용 reference doc)
-    └── TEMPLATE.md                      # 새 모듈 history 시작용 템플릿
+├── history/
+│   ├── harness_history_generalized.md  # 진화 기록 (참고용 reference doc)
+│   └── TEMPLATE.md                      # 새 모듈 history 시작용 템플릿
+└── templates/
+    └── SPEC.md                          # (선택) 모듈 회귀 방지용 spec 템플릿
 ```
 
 `.claude/skills/`에는 `dev-docs`만 포함했다. 스택별 구현 가이드라인은 프로젝트 도메인 의존성이 커서, 새 프로젝트마다 별도로 작성하는 것을 전제로 한다.

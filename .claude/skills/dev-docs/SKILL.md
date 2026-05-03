@@ -41,6 +41,8 @@ cat .claude/hooks/modules.conf.sh | head -30
 추정해서 사용자에게 1줄로 확인:
 > "이 작업은 `web/` (Next.js 앱) 영역으로 보이는데 맞나요? `api/` 도 같이?"
 
+> **선택 가드:** 대상 모듈에 `<module>/SPEC.md` 가 존재하면 SMALL 디스패치 `[CONTEXT]` / BIG `context.md` Key Files 섹션에 추가하고, implementer가 작업 시작 전에 읽도록 지시한다. 없으면 무시. 템플릿: `dev/templates/SPEC.md`.
+
 답이 나오면 STEP 1.5.
 
 ---
