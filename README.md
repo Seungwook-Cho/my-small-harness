@@ -50,6 +50,12 @@ Claude가 작업 완료를 보고한 뒤 commit을 빠뜨리거나, commit만 �
 
 → Stop hook (`stop-commit-history-check.sh`)으로 세션 종료 시점에 commit과 history 기록을 확인한다. 모듈 코드 수정 후 commit이 없으면 차단하고, commit은 있지만 history가 없으면 한 번 더 차단한다. Stop hook의 1회 차단 한계는 세션별 state 파일로 우회해 두 단계 순차 확인이 가능하게 했다.
 
+### 6. 한 곳을 수정하면 다른 곳이 조용히 깨지는 일이 반복됐다
+
+같은 모듈에서 작은 수정 한 번에 무관해 보이던 다른 기능이 회귀하는 경우가 있었다. 매번 영향 범위를 머릿속에서 추측해 작업하다 보니 빠뜨림이 잦았다.
+
+→ 회귀가 잦은 모듈에 한해 `<module>/SPEC.md`(선택)에 동작 명세와 Invariants(의존성 맵 · 불변 조건 · 충돌 감지 규칙)를 미리 적어둔다. `/dev-docs`가 디스패치 `[CONTEXT]`에 자동 포함시키고, Coordinator도 작업 시작 전 체크리스트에서 같이 읽는다. 모든 분기(MICRO/SMALL/BIG)에서 같은 정보 위에서 판단하도록 만든 것이 목적이다. 템플릿: [dev/templates/SPEC.md](dev/templates/SPEC.md).
+
 ---
 
 ## 핵심 컨셉
