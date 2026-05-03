@@ -18,35 +18,35 @@ As a session got long, Claude's answer quality dropped noticeably. `/clear` reco
 
 → Keep `plan.md`, `context.md`, and `tasks.md` as separate files under `dev/active/<task>/`, and re-inject only the necessary parts when starting from a fresh context. **Forget what can be safely forgotten; explicitly preserve only the context worth carrying forward.**
 
-### 2. I wanted the workflow to scale with task size
+### 2. Fixing one thing broke something else that had been working
+
+In the same module, a small change would sometimes break a seemingly unrelated feature. Without anything written down, I had to guess the impact range every time, and dependencies or invariant conditions that needed repeated checking were easy to miss. **But stuffing the entire module spec into every session's context consumed the token budget quickly.**
+
+→ For modules where this happens often, add a `<module>/SPEC.md`. This file records the behavior spec and Invariants (dependency map · invariant conditions · conflict-detection rules). In a monorepo, once the target module is identified, `/dev-docs` injects **only that module's SPEC.md** into the dispatch `[CONTEXT]`, and the Coordinator also reads it from the pre-task checklist. Instead of carrying every spec at all times, the harness loads only the relevant module's spec when needed. **This follows the same principle as #1 (`/clear` + plan/context/tasks separation): keep only the context needed for the current task.**
+
+### 3. I wanted the workflow to scale with task size
 
 Existing AI coding harnesses were useful for complex tasks, but some of them still applied the same planning-heavy flow to 1–2 line fixes where the cause was already clear. For personal work, I wanted a workflow that could stay lightweight when the task was small.
 
 → `/dev-docs` first classifies a task as BIG / SMALL / MICRO. MICRO is handled directly by the Coordinator, SMALL goes through one implementer dispatch, and only BIG tasks go through the full plan / context / tasks pipeline.
 
-### 3. Opus 4.7 for judgment, Sonnet/Haiku for execution
+### 4. Opus 4.7 for judgment, Sonnet/Haiku for execution
 
-After splitting tasks across models in personal projects, I found that Sonnet was often sufficient for implementation work. Opus 4.7 provided more noticeable value in planning, task decomposition, dispatch, and interpreting results than in writing code directly.
+After splitting tasks across models in personal projects, I found that Sonnet was often sufficient for implementation work. Opus 4.7 provided more noticeable value in planning, task decomposition, dispatching work, and interpreting results than in writing code directly.
 
 → Coordinator focuses on planning, judgment, and dispatch; implementation, verification, and error fixes are delegated to separate agents. The aim is to split work by role, reduce cost, and keep the workflow stable.
 
-### 4. For solo work, commits plus history notes were more practical than PRs
+### 5. For solo work, commits plus history notes were more practical than PRs
 
 When Claude needed to undo work or refer back to previous changes, commits were the most useful unit of history. For solo work, however, opening and merging a PR for every change felt heavy relative to the records it left behind.
 
 → Commits record WHAT, while `history.md` records WHY · alternatives considered · failed attempts. `history.md` is treated as a working note rather than something to push, so it can be reused as context in the next session without polish overhead.
 
-### 5. I wanted to enforce commits and history notes after a "done" report
+### 6. I wanted to enforce commits and history notes after a "done" report
 
 Claude would sometimes report a task as complete but skip the commit, or make a commit and end the session without writing to `history.md`. In the next session, the reason behind the change was gone — `git log` alone made it hard to recover the surrounding judgment.
 
 → The Stop hook (`stop-commit-history-check.sh`) checks for both commit and history at session-end. If module code was modified without a commit, it blocks; if there is a commit but no history, it blocks once more. Since a Stop hook can only block once, a per-session state file works around that limit and verifies commit → history as two sequential stages.
-
-### 6. Small fixes kept causing quiet regressions in the same module
-
-In the same module, a small change would sometimes regress a seemingly unrelated feature. Without anything written down, I had to guess the impact range every time, and dependencies or invariants that needed repeated checking were easy to miss.
-
-→ For modules where regressions are frequent, optionally add a `<module>/SPEC.md`. With a behavior spec and Invariants (dependency map · invariant conditions · conflict-detection rules) written ahead of time, `/dev-docs` auto-injects it into the dispatch `[CONTEXT]`, and the Coordinator also reads it from the pre-task checklist. The goal is to make every branch (MICRO / SMALL / BIG) decide on the same shared information.
 
 ---
 
